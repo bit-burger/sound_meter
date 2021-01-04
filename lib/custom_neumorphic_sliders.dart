@@ -1,6 +1,6 @@
 import 'package:flutter_neumorphic/flutter_neumorphic.dart';
 import 'main.dart';
-
+import 'package:flutter/services.dart';
 @immutable
 class CustomRangeSliderStyle {
   final double depth;
@@ -767,9 +767,13 @@ class NeumorphicIconButton extends StatefulWidget {
   final bool drawSurfaceAboveChild;
   final bool provideHapticFeedback;
   final String tooltip;
+  final bool on;
+  final bool disabled;
 
   NeumorphicIconButton(this.icon,{
     Key key,
+    this.disabled = false,
+    this.on = true,
     this.iconSize,
     this.iconColor,
     this.secondIcon,
@@ -777,7 +781,7 @@ class NeumorphicIconButton extends StatefulWidget {
     this.drawSurfaceAboveChild = true,
     this.pressed, //true/false if you want to change the state of the button
     this.duration = const Duration(milliseconds: 400),
-    this.curve = Curves.easeInCirc,
+    this.curve = Curves.easeInOut,
     //this.accent,
     this.onPressed,
     this.minDistance = 0,
@@ -796,11 +800,14 @@ class _NeumorphicIconButtonState extends State<NeumorphicIconButton> {
 
   double depth;
   bool pressed = false; //overwrite widget.pressed when click for animation
-  bool on = true;
-
+  bool on;
+  bool disabled;
   void updateInitialStyle() {
+    this.on = widget.on;
+
     final appBarPresent = NeumorphicAppBarTheme.of(context) != null;
-    if (widget.style != initialStyle || initialStyle == null) {
+    if (widget.style != initialStyle || initialStyle == null||disabled!=widget.disabled) {
+      this.disabled = widget.disabled;
       final theme = NeumorphicTheme.currentTheme(context);
       setState(() {
         this.initialStyle = widget.style ??
@@ -815,17 +822,25 @@ class _NeumorphicIconButtonState extends State<NeumorphicIconButton> {
 
   @override
   void didChangeDependencies() {
+    print("UPDATED");
     super.didChangeDependencies();
     updateInitialStyle();
   }
 
   @override
-  void didUpdateWidget(NeumorphicIconButton oldWidget) {
+  void didUpdateWidget(Widget oldWidget) {
+    print("OKOK");
+    if(widget.disabled!=this.disabled) {
+      this.disabled = widget.disabled;
+      updateInitialStyle();
+    }
     super.didUpdateWidget(oldWidget);
-    updateInitialStyle();
   }
 
+
   Future<void> _handlePress() async {
+
+    if(disabled) return;
     hasFinishedAnimationDown = false;
     setState(() {
       pressed = true;
@@ -928,7 +943,7 @@ class _NeumorphicIconButtonState extends State<NeumorphicIconButton> {
 
   double _getDepth() {
     if (widget.isEnabled) {
-      return this.depth;
+      return (this.disabled ? 0.5 : depth);
     } else {
       return 0;
     }
