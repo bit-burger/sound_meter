@@ -13,27 +13,32 @@ import 'package:stop_watch_timer/stop_watch_timer.dart';
 import 'package:ionicons/ionicons.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  final Directory applicationDirectory =
-  await getApplicationDocumentsDirectory();
-  final String path =
-      applicationDirectory.path + "/a.aac";
-  final File file = File(path);
-  if (!file.existsSync()) {
-    ByteData bytes = await rootBundle.load("lib/a.aac");
-    file.writeAsBytes(bytes.buffer.asInt8List());
-    file.create();
+  try {
+    WidgetsFlutterBinding.ensureInitialized();
+    final Directory applicationDirectory =
+    await getApplicationDocumentsDirectory();
+    final String path =
+        applicationDirectory.path + "/a.aac";
+    final File file = File(path);
+    if (!file.existsSync()) {
+      ByteData bytes = await rootBundle.load("lib/a.aac");
+      file.writeAsBytes(bytes.buffer.asInt8List());
+      file.create();
+    }
+    Settings.preferences = await SharedPreferences.getInstance();
+    if (Settings.preferences.containsKey("lowValue")) {
+      print(Settings.preferences.getDouble("lowValue"));
+      print(Settings.preferences.getDouble("highValue"));
+      print(Settings.preferences.getDouble("maxValue"));
+    } else {
+      Settings.preferences.setDouble("lowValue", 0);
+      Settings.preferences.setDouble("highValue", 100);
+      Settings.preferences.setDouble("maxValue", 80);
+    }
+  } catch (error) {
+    print(error);
   }
-  Settings.preferences = await SharedPreferences.getInstance();
-  if (Settings.preferences.containsKey("lowValue")) {
-    print(Settings.preferences.getDouble("lowValue"));
-    print(Settings.preferences.getDouble("highValue"));
-    print(Settings.preferences.getDouble("maxValue"));
-  } else {
-    Settings.preferences.setDouble("lowValue", 0);
-    Settings.preferences.setDouble("highValue", 100);
-    Settings.preferences.setDouble("maxValue", 80);
-  }
+
   runApp(App());
 }
 
